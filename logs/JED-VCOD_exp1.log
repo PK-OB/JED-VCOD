@@ -1,0 +1,352 @@
+2025-09-22 16:45:42,354 [INFO] Using device: cuda:0
+2025-09-22 16:45:42,554 [INFO] Model weights initialized with Kaiming Normal.
+2025-09-22 16:45:42,752 [INFO] Dataset loaded: 722 for training, 181 for validation.
+2025-09-22 16:45:42,752 [INFO] --- Starting Training ---
+2025-09-22 16:46:49,821 [INFO] Epoch 1/10000 | Train Loss: 2.0209 | Val Loss: 2.0004
+2025-09-22 16:46:49,933 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 16:47:56,819 [INFO] Epoch 2/10000 | Train Loss: 2.0019 | Val Loss: 2.0002
+2025-09-22 16:47:56,994 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 16:49:03,821 [INFO] Epoch 3/10000 | Train Loss: 2.0012 | Val Loss: 2.0001
+2025-09-22 16:49:03,985 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 16:50:10,742 [INFO] Epoch 4/10000 | Train Loss: 2.0010 | Val Loss: 2.0001
+2025-09-22 16:50:10,908 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 16:51:17,677 [INFO] Epoch 5/10000 | Train Loss: 2.0009 | Val Loss: 2.0001
+2025-09-22 16:51:17,841 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 16:52:24,639 [INFO] Epoch 6/10000 | Train Loss: 2.0010 | Val Loss: 2.0001
+2025-09-22 16:52:24,801 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 16:53:31,718 [INFO] Epoch 7/10000 | Train Loss: 2.0009 | Val Loss: 2.0001
+2025-09-22 16:53:31,892 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 16:54:38,792 [INFO] Epoch 8/10000 | Train Loss: 2.0009 | Val Loss: 2.0000
+2025-09-22 16:54:38,964 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 16:55:45,766 [INFO] Epoch 9/10000 | Train Loss: 2.0008 | Val Loss: 2.0000
+2025-09-22 16:55:45,928 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 16:56:52,833 [INFO] Epoch 10/10000 | Train Loss: 2.0004 | Val Loss: 2.0000
+2025-09-22 16:56:52,988 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 16:57:59,798 [INFO] Epoch 11/10000 | Train Loss: 2.0004 | Val Loss: 2.0000
+2025-09-22 16:57:59,963 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 16:59:06,824 [INFO] Epoch 12/10000 | Train Loss: 2.0004 | Val Loss: 2.0000
+2025-09-22 16:59:07,007 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:00:13,825 [INFO] Epoch 13/10000 | Train Loss: 2.0004 | Val Loss: 2.0000
+2025-09-22 17:00:13,981 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:01:20,773 [INFO] Epoch 14/10000 | Train Loss: 2.0004 | Val Loss: 2.0000
+2025-09-22 17:01:20,774 [INFO] Validation loss did not improve. Counter: 1/100
+2025-09-22 17:02:27,596 [INFO] Epoch 15/10000 | Train Loss: 2.0004 | Val Loss: 2.0000
+2025-09-22 17:02:27,764 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:03:34,672 [INFO] Epoch 16/10000 | Train Loss: 2.0003 | Val Loss: 2.0000
+2025-09-22 17:03:34,672 [INFO] Validation loss did not improve. Counter: 1/100
+2025-09-22 17:04:41,539 [INFO] Epoch 17/10000 | Train Loss: 2.0002 | Val Loss: 2.0000
+2025-09-22 17:04:41,539 [INFO] Validation loss did not improve. Counter: 2/100
+2025-09-22 17:05:48,400 [INFO] Epoch 18/10000 | Train Loss: 2.0002 | Val Loss: 2.0000
+2025-09-22 17:05:48,567 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:06:55,422 [INFO] Epoch 19/10000 | Train Loss: 2.0002 | Val Loss: 2.0000
+2025-09-22 17:06:55,422 [INFO] Validation loss did not improve. Counter: 1/100
+2025-09-22 17:08:02,225 [INFO] Epoch 20/10000 | Train Loss: 2.0002 | Val Loss: 2.0000
+2025-09-22 17:08:02,394 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:09:09,261 [INFO] Epoch 21/10000 | Train Loss: 2.0002 | Val Loss: 2.0000
+2025-09-22 17:09:09,418 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:10:16,294 [INFO] Epoch 22/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 17:10:16,459 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:11:23,315 [INFO] Epoch 23/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 17:11:23,474 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:12:30,380 [INFO] Epoch 24/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 17:12:30,531 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:13:37,364 [INFO] Epoch 25/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 17:13:37,528 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:14:44,434 [INFO] Epoch 26/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 17:14:44,596 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:15:51,419 [INFO] Epoch 27/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 17:15:51,419 [INFO] Validation loss did not improve. Counter: 1/100
+2025-09-22 17:16:58,292 [INFO] Epoch 28/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 17:16:58,455 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:18:05,279 [INFO] Epoch 29/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 17:18:05,279 [INFO] Validation loss did not improve. Counter: 1/100
+2025-09-22 17:19:12,049 [INFO] Epoch 30/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 17:19:12,212 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:20:19,045 [INFO] Epoch 31/10000 | Train Loss: 2.0000 | Val Loss: 2.0000
+2025-09-22 17:20:19,223 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:21:26,111 [INFO] Epoch 32/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 17:21:26,111 [INFO] Validation loss did not improve. Counter: 1/100
+2025-09-22 17:22:32,924 [INFO] Epoch 33/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 17:22:33,092 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:23:39,860 [INFO] Epoch 34/10000 | Train Loss: 2.0000 | Val Loss: 2.0000
+2025-09-22 17:23:39,860 [INFO] Validation loss did not improve. Counter: 1/100
+2025-09-22 17:24:46,646 [INFO] Epoch 35/10000 | Train Loss: 2.0000 | Val Loss: 2.0000
+2025-09-22 17:24:46,647 [INFO] Validation loss did not improve. Counter: 2/100
+2025-09-22 17:25:53,420 [INFO] Epoch 36/10000 | Train Loss: 2.0000 | Val Loss: 2.0000
+2025-09-22 17:25:53,421 [INFO] Validation loss did not improve. Counter: 3/100
+2025-09-22 17:27:00,286 [INFO] Epoch 37/10000 | Train Loss: 2.0000 | Val Loss: 2.0000
+2025-09-22 17:27:00,462 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:28:07,356 [INFO] Epoch 38/10000 | Train Loss: 2.0000 | Val Loss: 2.0000
+2025-09-22 17:28:07,511 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:29:14,305 [INFO] Epoch 39/10000 | Train Loss: 2.0000 | Val Loss: 2.0000
+2025-09-22 17:29:14,483 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:30:21,211 [INFO] Epoch 40/10000 | Train Loss: 2.0000 | Val Loss: 2.0000
+2025-09-22 17:30:21,374 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:31:28,070 [INFO] Epoch 41/10000 | Train Loss: 2.0000 | Val Loss: 2.0000
+2025-09-22 17:31:28,235 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:32:35,045 [INFO] Epoch 42/10000 | Train Loss: 2.0000 | Val Loss: 2.0000
+2025-09-22 17:32:35,045 [INFO] Validation loss did not improve. Counter: 1/100
+2025-09-22 17:33:27,151 [INFO] Using device: cuda:0
+2025-09-22 17:33:27,352 [INFO] Model weights initialized with Kaiming Normal.
+2025-09-22 17:33:27,553 [INFO] Dataset loaded: 722 for training, 181 for validation.
+2025-09-22 17:33:27,553 [INFO] --- Starting Training ---
+2025-09-22 17:34:34,591 [INFO] Epoch 1/10000 | Train Loss: 2.0404 | Val Loss: 2.0014
+2025-09-22 17:34:34,770 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:35:41,622 [INFO] Epoch 2/10000 | Train Loss: 2.0043 | Val Loss: 2.0007
+2025-09-22 17:35:41,793 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:36:48,490 [INFO] Epoch 3/10000 | Train Loss: 2.0024 | Val Loss: 2.0004
+2025-09-22 17:36:48,652 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:37:55,491 [INFO] Epoch 4/10000 | Train Loss: 2.0017 | Val Loss: 2.0003
+2025-09-22 17:37:55,664 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:39:02,463 [INFO] Epoch 5/10000 | Train Loss: 2.0013 | Val Loss: 2.0002
+2025-09-22 17:39:02,628 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:40:09,409 [INFO] Epoch 6/10000 | Train Loss: 2.0010 | Val Loss: 2.0002
+2025-09-22 17:40:09,560 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:41:16,350 [INFO] Epoch 7/10000 | Train Loss: 2.0008 | Val Loss: 2.0002
+2025-09-22 17:41:16,506 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:42:23,198 [INFO] Epoch 8/10000 | Train Loss: 2.0007 | Val Loss: 2.0001
+2025-09-22 17:42:23,346 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:43:30,213 [INFO] Epoch 9/10000 | Train Loss: 2.0006 | Val Loss: 2.0001
+2025-09-22 17:43:30,369 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:44:37,128 [INFO] Epoch 10/10000 | Train Loss: 2.0005 | Val Loss: 2.0001
+2025-09-22 17:44:37,293 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:45:44,041 [INFO] Epoch 11/10000 | Train Loss: 2.0005 | Val Loss: 2.0001
+2025-09-22 17:45:44,196 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:46:51,012 [INFO] Epoch 12/10000 | Train Loss: 2.0005 | Val Loss: 2.0001
+2025-09-22 17:46:51,181 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:47:57,992 [INFO] Epoch 13/10000 | Train Loss: 2.0003 | Val Loss: 2.0001
+2025-09-22 17:47:58,154 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:49:04,900 [INFO] Epoch 14/10000 | Train Loss: 2.0003 | Val Loss: 2.0001
+2025-09-22 17:49:05,066 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:50:11,815 [INFO] Epoch 15/10000 | Train Loss: 2.0003 | Val Loss: 2.0001
+2025-09-22 17:50:11,968 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:51:18,704 [INFO] Epoch 16/10000 | Train Loss: 2.0002 | Val Loss: 2.0001
+2025-09-22 17:51:18,860 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:52:25,637 [INFO] Epoch 17/10000 | Train Loss: 2.0002 | Val Loss: 2.0001
+2025-09-22 17:52:25,815 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:53:32,673 [INFO] Epoch 18/10000 | Train Loss: 2.0002 | Val Loss: 2.0001
+2025-09-22 17:53:32,838 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:54:39,550 [INFO] Epoch 19/10000 | Train Loss: 2.0002 | Val Loss: 2.0001
+2025-09-22 17:54:39,708 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:55:46,502 [INFO] Epoch 20/10000 | Train Loss: 2.0002 | Val Loss: 2.0000
+2025-09-22 17:55:46,666 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:56:53,399 [INFO] Epoch 21/10000 | Train Loss: 2.0002 | Val Loss: 2.0000
+2025-09-22 17:56:53,574 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:58:00,220 [INFO] Epoch 22/10000 | Train Loss: 2.0002 | Val Loss: 2.0000
+2025-09-22 17:58:00,388 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 17:59:07,240 [INFO] Epoch 23/10000 | Train Loss: 2.0002 | Val Loss: 2.0000
+2025-09-22 17:59:07,411 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 18:00:14,219 [INFO] Epoch 24/10000 | Train Loss: 2.0002 | Val Loss: 2.0000
+2025-09-22 18:00:14,383 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 18:01:21,077 [INFO] Epoch 25/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:01:21,236 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 18:02:27,973 [INFO] Epoch 26/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:02:28,136 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 18:03:34,794 [INFO] Epoch 27/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:03:34,957 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 18:04:41,605 [INFO] Epoch 28/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:04:41,758 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 18:05:48,543 [INFO] Epoch 29/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:05:48,698 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 18:06:55,439 [INFO] Epoch 30/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:06:55,601 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 18:08:02,337 [INFO] Epoch 31/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:08:02,497 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 18:09:09,501 [INFO] Epoch 32/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:09:09,655 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 18:10:16,469 [INFO] Epoch 33/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:10:16,470 [INFO] Validation loss did not improve. Counter: 1/100
+2025-09-22 18:11:23,253 [INFO] Epoch 34/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:11:23,411 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 18:12:30,182 [INFO] Epoch 35/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:12:30,333 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 18:13:37,094 [INFO] Epoch 36/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:13:37,263 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 18:14:44,011 [INFO] Epoch 37/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:14:44,011 [INFO] Validation loss did not improve. Counter: 1/100
+2025-09-22 18:15:50,778 [INFO] Epoch 38/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:15:50,939 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 18:16:57,713 [INFO] Epoch 39/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:16:57,888 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 18:18:04,711 [INFO] Epoch 40/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:18:04,712 [INFO] Validation loss did not improve. Counter: 1/100
+2025-09-22 18:19:11,474 [INFO] Epoch 41/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:19:11,474 [INFO] Validation loss did not improve. Counter: 2/100
+2025-09-22 18:20:18,215 [INFO] Epoch 42/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:20:18,395 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 18:21:25,180 [INFO] Epoch 43/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:21:25,181 [INFO] Validation loss did not improve. Counter: 1/100
+2025-09-22 18:22:32,004 [INFO] Epoch 44/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:22:32,004 [INFO] Validation loss did not improve. Counter: 2/100
+2025-09-22 18:23:38,820 [INFO] Epoch 45/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:23:38,820 [INFO] Validation loss did not improve. Counter: 3/100
+2025-09-22 18:24:45,505 [INFO] Epoch 46/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:24:45,506 [INFO] Validation loss did not improve. Counter: 4/100
+2025-09-22 18:25:52,348 [INFO] Epoch 47/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:25:52,349 [INFO] Validation loss did not improve. Counter: 5/100
+2025-09-22 18:26:59,162 [INFO] Epoch 48/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:26:59,320 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 18:28:06,230 [INFO] Epoch 49/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:28:06,388 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 18:29:13,223 [INFO] Epoch 50/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:29:13,388 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 18:30:20,219 [INFO] Epoch 51/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:30:20,219 [INFO] Validation loss did not improve. Counter: 1/100
+2025-09-22 18:31:27,044 [INFO] Epoch 52/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:31:27,044 [INFO] Validation loss did not improve. Counter: 2/100
+2025-09-22 18:32:33,870 [INFO] Epoch 53/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:32:33,870 [INFO] Validation loss did not improve. Counter: 3/100
+2025-09-22 18:33:40,728 [INFO] Epoch 54/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:33:40,728 [INFO] Validation loss did not improve. Counter: 4/100
+2025-09-22 18:34:47,561 [INFO] Epoch 55/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:34:47,562 [INFO] Validation loss did not improve. Counter: 5/100
+2025-09-22 18:35:54,396 [INFO] Epoch 56/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:35:54,396 [INFO] Validation loss did not improve. Counter: 6/100
+2025-09-22 18:37:01,185 [INFO] Epoch 57/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:37:01,185 [INFO] Validation loss did not improve. Counter: 7/100
+2025-09-22 18:38:07,956 [INFO] Epoch 58/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:38:07,956 [INFO] Validation loss did not improve. Counter: 8/100
+2025-09-22 18:39:14,775 [INFO] Epoch 59/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:39:14,775 [INFO] Validation loss did not improve. Counter: 9/100
+2025-09-22 18:40:21,574 [INFO] Epoch 60/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:40:21,574 [INFO] Validation loss did not improve. Counter: 10/100
+2025-09-22 18:41:28,304 [INFO] Epoch 61/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:41:28,304 [INFO] Validation loss did not improve. Counter: 11/100
+2025-09-22 18:42:35,065 [INFO] Epoch 62/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:42:35,065 [INFO] Validation loss did not improve. Counter: 12/100
+2025-09-22 18:43:41,889 [INFO] Epoch 63/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:43:41,890 [INFO] Validation loss did not improve. Counter: 13/100
+2025-09-22 18:44:48,632 [INFO] Epoch 64/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:44:48,632 [INFO] Validation loss did not improve. Counter: 14/100
+2025-09-22 18:45:55,492 [INFO] Epoch 65/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:45:55,493 [INFO] Validation loss did not improve. Counter: 15/100
+2025-09-22 18:47:02,362 [INFO] Epoch 66/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:47:02,362 [INFO] Validation loss did not improve. Counter: 16/100
+2025-09-22 18:48:09,206 [INFO] Epoch 67/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:48:09,375 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 18:49:16,249 [INFO] Epoch 68/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:49:16,417 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 18:50:23,126 [INFO] Epoch 69/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:50:23,126 [INFO] Validation loss did not improve. Counter: 1/100
+2025-09-22 18:51:29,867 [INFO] Epoch 70/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:51:30,031 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 18:52:36,894 [INFO] Epoch 71/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:52:37,059 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 18:53:43,923 [INFO] Epoch 72/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:53:44,102 [INFO] Validation loss improved. Saved best model to checkpoints/0922_1643_model.pth
+2025-09-22 18:54:50,979 [INFO] Epoch 73/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:54:50,979 [INFO] Validation loss did not improve. Counter: 1/100
+2025-09-22 18:55:57,749 [INFO] Epoch 74/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:55:57,749 [INFO] Validation loss did not improve. Counter: 2/100
+2025-09-22 18:57:04,637 [INFO] Epoch 75/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:57:04,637 [INFO] Validation loss did not improve. Counter: 3/100
+2025-09-22 18:58:11,474 [INFO] Epoch 76/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:58:11,474 [INFO] Validation loss did not improve. Counter: 4/100
+2025-09-22 18:59:18,370 [INFO] Epoch 77/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 18:59:18,370 [INFO] Validation loss did not improve. Counter: 5/100
+2025-09-22 19:00:25,208 [INFO] Epoch 78/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:00:25,208 [INFO] Validation loss did not improve. Counter: 6/100
+2025-09-22 19:01:32,009 [INFO] Epoch 79/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:01:32,009 [INFO] Validation loss did not improve. Counter: 7/100
+2025-09-22 19:02:38,832 [INFO] Epoch 80/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:02:38,832 [INFO] Validation loss did not improve. Counter: 8/100
+2025-09-22 19:03:45,592 [INFO] Epoch 81/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:03:45,592 [INFO] Validation loss did not improve. Counter: 9/100
+2025-09-22 19:04:52,496 [INFO] Epoch 82/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:04:52,496 [INFO] Validation loss did not improve. Counter: 10/100
+2025-09-22 19:05:59,416 [INFO] Epoch 83/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:05:59,417 [INFO] Validation loss did not improve. Counter: 11/100
+2025-09-22 19:07:06,220 [INFO] Epoch 84/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:07:06,220 [INFO] Validation loss did not improve. Counter: 12/100
+2025-09-22 19:08:13,070 [INFO] Epoch 85/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:08:13,071 [INFO] Validation loss did not improve. Counter: 13/100
+2025-09-22 19:09:19,850 [INFO] Epoch 86/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:09:19,851 [INFO] Validation loss did not improve. Counter: 14/100
+2025-09-22 19:10:26,604 [INFO] Epoch 87/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:10:26,604 [INFO] Validation loss did not improve. Counter: 15/100
+2025-09-22 19:11:33,383 [INFO] Epoch 88/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:11:33,384 [INFO] Validation loss did not improve. Counter: 16/100
+2025-09-22 19:12:40,187 [INFO] Epoch 89/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:12:40,187 [INFO] Validation loss did not improve. Counter: 17/100
+2025-09-22 19:13:46,968 [INFO] Epoch 90/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:13:46,969 [INFO] Validation loss did not improve. Counter: 18/100
+2025-09-22 19:14:53,804 [INFO] Epoch 91/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:14:53,804 [INFO] Validation loss did not improve. Counter: 19/100
+2025-09-22 19:16:00,515 [INFO] Epoch 92/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:16:00,515 [INFO] Validation loss did not improve. Counter: 20/100
+2025-09-22 19:17:07,364 [INFO] Epoch 93/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:17:07,364 [INFO] Validation loss did not improve. Counter: 21/100
+2025-09-22 19:18:14,147 [INFO] Epoch 94/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:18:14,148 [INFO] Validation loss did not improve. Counter: 22/100
+2025-09-22 19:19:20,983 [INFO] Epoch 95/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:19:20,983 [INFO] Validation loss did not improve. Counter: 23/100
+2025-09-22 19:20:27,897 [INFO] Epoch 96/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:20:27,898 [INFO] Validation loss did not improve. Counter: 24/100
+2025-09-22 19:21:34,680 [INFO] Epoch 97/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:21:34,680 [INFO] Validation loss did not improve. Counter: 25/100
+2025-09-22 19:22:41,548 [INFO] Epoch 98/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:22:41,548 [INFO] Validation loss did not improve. Counter: 26/100
+2025-09-22 19:23:48,365 [INFO] Epoch 99/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:23:48,365 [INFO] Validation loss did not improve. Counter: 27/100
+2025-09-22 19:24:55,187 [INFO] Epoch 100/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:24:55,188 [INFO] Validation loss did not improve. Counter: 28/100
+2025-09-22 19:26:02,029 [INFO] Epoch 101/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:26:02,029 [INFO] Validation loss did not improve. Counter: 29/100
+2025-09-22 19:27:08,875 [INFO] Epoch 102/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:27:08,875 [INFO] Validation loss did not improve. Counter: 30/100
+2025-09-22 19:28:15,772 [INFO] Epoch 103/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:28:15,772 [INFO] Validation loss did not improve. Counter: 31/100
+2025-09-22 19:29:22,635 [INFO] Epoch 104/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:29:22,635 [INFO] Validation loss did not improve. Counter: 32/100
+2025-09-22 19:30:29,402 [INFO] Epoch 105/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:30:29,402 [INFO] Validation loss did not improve. Counter: 33/100
+2025-09-22 19:31:36,177 [INFO] Epoch 106/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:31:36,178 [INFO] Validation loss did not improve. Counter: 34/100
+2025-09-22 19:32:42,998 [INFO] Epoch 107/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:32:42,998 [INFO] Validation loss did not improve. Counter: 35/100
+2025-09-22 19:33:49,780 [INFO] Epoch 108/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:33:49,781 [INFO] Validation loss did not improve. Counter: 36/100
+2025-09-22 19:34:56,649 [INFO] Epoch 109/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:34:56,649 [INFO] Validation loss did not improve. Counter: 37/100
+2025-09-22 19:36:03,427 [INFO] Epoch 110/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:36:03,427 [INFO] Validation loss did not improve. Counter: 38/100
+2025-09-22 19:37:10,286 [INFO] Epoch 111/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:37:10,286 [INFO] Validation loss did not improve. Counter: 39/100
+2025-09-22 19:38:17,076 [INFO] Epoch 112/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:38:17,076 [INFO] Validation loss did not improve. Counter: 40/100
+2025-09-22 19:39:23,909 [INFO] Epoch 113/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:39:23,909 [INFO] Validation loss did not improve. Counter: 41/100
+2025-09-22 19:40:30,775 [INFO] Epoch 114/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:40:30,775 [INFO] Validation loss did not improve. Counter: 42/100
+2025-09-22 19:41:37,580 [INFO] Epoch 115/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:41:37,580 [INFO] Validation loss did not improve. Counter: 43/100
+2025-09-22 19:42:44,357 [INFO] Epoch 116/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:42:44,358 [INFO] Validation loss did not improve. Counter: 44/100
+2025-09-22 19:43:51,210 [INFO] Epoch 117/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:43:51,210 [INFO] Validation loss did not improve. Counter: 45/100
+2025-09-22 19:44:58,063 [INFO] Epoch 118/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:44:58,063 [INFO] Validation loss did not improve. Counter: 46/100
+2025-09-22 19:46:04,950 [INFO] Epoch 119/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:46:04,951 [INFO] Validation loss did not improve. Counter: 47/100
+2025-09-22 19:47:11,762 [INFO] Epoch 120/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:47:11,762 [INFO] Validation loss did not improve. Counter: 48/100
+2025-09-22 19:48:18,523 [INFO] Epoch 121/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:48:18,523 [INFO] Validation loss did not improve. Counter: 49/100
+2025-09-22 19:49:25,341 [INFO] Epoch 122/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:49:25,341 [INFO] Validation loss did not improve. Counter: 50/100
+2025-09-22 19:50:32,173 [INFO] Epoch 123/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:50:32,173 [INFO] Validation loss did not improve. Counter: 51/100
+2025-09-22 19:51:38,990 [INFO] Epoch 124/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:51:38,990 [INFO] Validation loss did not improve. Counter: 52/100
+2025-09-22 19:52:45,787 [INFO] Epoch 125/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:52:45,787 [INFO] Validation loss did not improve. Counter: 53/100
+2025-09-22 19:53:24,651 [INFO] Using device: cuda:0
+2025-09-22 19:53:24,853 [INFO] Model weights initialized with Kaiming Normal.
+2025-09-22 19:53:25,551 [INFO] Dataset loaded: 722 for training, 181 for validation.
+2025-09-22 19:53:25,551 [INFO] --- Starting Training ---
+2025-09-22 19:53:36,730 [INFO] Using device: cuda:0
+2025-09-22 19:53:36,932 [INFO] Model weights initialized with Kaiming Normal.
+2025-09-22 19:53:37,132 [INFO] Dataset loaded: 722 for training, 181 for validation.
+2025-09-22 19:53:37,133 [INFO] --- Starting Training ---
+2025-09-22 19:53:52,645 [INFO] Epoch 126/10000 | Train Loss: 2.0001 | Val Loss: 2.0000
+2025-09-22 19:53:52,645 [INFO] Validation loss did not improve. Counter: 54/100
