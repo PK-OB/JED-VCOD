@@ -2,19 +2,64 @@ import torch
 import torch.nn as nn
 import os
 import logging
+import random
+import numpy as np
+import matplotlib.pyplot as plt
 from torchvision.models.optical_flow import raft_large, Raft_Large_Weights
 from torch.utils.data import DataLoader, random_split
 from torch.nn.functional import grid_sample
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.tensorboard import SummaryWriter
+from torchvision.utils import save_image
 from tqdm import tqdm
-import numpy as np
 
 from config import cfg
 from models.main_model import JED_VCOD_Fauna_Simplified
 from datasets.moca_video_dataset import MoCAVideoDataset
-from utils.losses import DiceLoss, FocalLoss # FocalLoss import
+from utils.losses import DiceLoss, FocalLoss
 from utils.logger import setup_logger
+
+def unnormalize(tensor, mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)):
+    """정규화된 이미지 텐서를 원래 이미지로 되돌리는 함수"""
+    for t, m, s in zip(tensor, mean, std):
+        t.mul_(s).add_(m)
+    return tensor
+
+def verify_and_save_samples(dataset, common_cfg, train_cfg):
+    """데이터셋에서 랜덤 샘플을 뽑아 시각화하고 이미지 파일로 저장하는 함수"""
+    logging.info("--- Verifying dataset samples ---")
+    if len(dataset) < 5:
+        logging.warning("Dataset has fewer than 5 samples, skipping verification.")
+        return
+
+    fig, axes = plt.subplots(2, 5, figsize=(20, 8))
+    fig.suptitle('Dataset Verification: 5 Random Samples', fontsize=16)
+    random_indices = random.sample(range(len(dataset)), 5)
+
+    for i, idx in enumerate(random_indices):
+        video_clip, mask_clip = dataset[idx]
+        frame_index_to_show = common_cfg['clip_len'] // 2
+        
+        image_tensor = video_clip[frame_index_to_show]
+        image_to_show = unnormalize(image_tensor.clone()).numpy().transpose(1, 2, 0)
+        axes[0, i].imshow(image_to_show)
+        axes[0, i].set_title(f"Sample {idx} - Image")
+        axes[0, i].axis('off')
+
+        mask_tensor = mask_clip[frame_index_to_show]
+        mask_to_show = mask_tensor.squeeze().numpy()
+        axes[1, i].imshow(mask_to_show, cmap='gray')
+        axes[1, i].set_title(f"Sample {idx} - Mask")
+        axes[1, i].axis('off')
+
+    debug_dir = os.path.join(train_cfg['log_dir'], 'debug_images')
+    os.makedirs(debug_dir, exist_ok=True)
+    save_path = os.path.join(debug_dir, f"{train_cfg['experiment_name']}_dataset_verification.png")
+    
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
+    plt.savefig(save_path)
+    plt.close(fig)
+    logging.info(f"Verification image saved to: {save_path}")
 
 def weights_init(m):
     if isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d):
@@ -36,7 +81,6 @@ def train_one_epoch(model, raft_model, raft_transforms, train_loader, optimizer,
         optimizer.zero_grad()
         predicted_masks = model(video_clip)
         
-        # BCE Loss를 Focal Loss로 교체
         loss_focal = focal_loss(predicted_masks, ground_truth_masks)
         loss_dice = dice_loss(predicted_masks, ground_truth_masks)
         loss_seg = loss_focal + train_cfg['dice_weight'] * loss_dice
@@ -62,20 +106,41 @@ def train_one_epoch(model, raft_model, raft_transforms, train_loader, optimizer,
                 mask_t_warped = grid_sample(predicted_masks[:, frame_idx], warped_grid, mode='bilinear', padding_mode='border', align_corners=False)
                 loss_temporal += l1_loss(mask_t_warped, predicted_masks[:, frame_idx+1])
         
-        loss_temporal_avg = loss_temporal / (t - 1) if t > 1 and t > 1 else torch.tensor(0.0).to(device)
+        loss_temporal_avg = loss_temporal / (t - 1) if t > 1 else torch.tensor(0.0).to(device)
         total_loss = loss_seg + train_cfg['lambda_temporal'] * loss_temporal_avg
+        
+        if torch.isnan(total_loss) or torch.isinf(total_loss):
+            logging.error("!!! Loss is NaN or Inf. Stopping training.")
+            return -1
+
         total_loss.backward()
+        
+        total_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+        
         optimizer.step()
         
         current_loss = total_loss.item()
         epoch_loss += current_loss
         
         global_step = epoch * len(train_loader) + i
+        writer.add_scalar('Gradients/total_norm', total_norm.item(), global_step)
         writer.add_scalar('Loss/total_step', current_loss, global_step)
         writer.add_scalar('Loss/segmentation_step', loss_seg.item(), global_step)
-        if t > 1:
+        if t > 1 and isinstance(loss_temporal_avg, torch.Tensor):
             writer.add_scalar('Loss/temporal_step', loss_temporal_avg.item(), global_step)
             
+    if (epoch + 1) % train_cfg['debug_image_interval'] == 0:
+        pred_to_save = torch.sigmoid(predicted_masks[0, 0]).cpu()
+        gt_to_save = ground_truth_masks[0, 0].cpu()
+        
+        debug_dir = os.path.join(train_cfg['log_dir'], 'debug_images')
+        os.makedirs(debug_dir, exist_ok=True)
+        save_image(pred_to_save, os.path.join(debug_dir, f'epoch_{epoch+1}_prediction.png'))
+        save_image(gt_to_save, os.path.join(debug_dir, f'epoch_{epoch+1}_ground_truth.png'))
+        
+        writer.add_image('Images/Prediction', pred_to_save, epoch)
+        writer.add_image('Images/GroundTruth', gt_to_save, epoch)
+
     return epoch_loss / len(train_loader)
 
 def validate(model, val_loader, device, focal_loss, dice_loss, train_cfg):
@@ -87,7 +152,6 @@ def validate(model, val_loader, device, focal_loss, dice_loss, train_cfg):
             ground_truth_masks = ground_truth_masks.to(device)
             predicted_masks = model(video_clip)
             
-            # BCE Loss를 Focal Loss로 교체
             loss_focal = focal_loss(predicted_masks, ground_truth_masks)
             loss_dice = dice_loss(predicted_masks, ground_truth_masks)
             loss = loss_focal + train_cfg['dice_weight'] * loss_dice
@@ -126,7 +190,6 @@ def main():
     raft_model = raft_large(weights=raft_weights, progress=False).to(device)
     raft_model.eval()
 
-    # BCE Loss를 Focal Loss로 교체
     focal_loss = FocalLoss()
     dice_loss = DiceLoss()
     l1_loss = nn.L1Loss()
@@ -143,6 +206,8 @@ def main():
     train_loader = DataLoader(train_dataset, batch_size=train_cfg['batch_size'], shuffle=True, num_workers=common_cfg['num_workers'])
     val_loader = DataLoader(val_dataset, batch_size=train_cfg['batch_size'], shuffle=False, num_workers=common_cfg['num_workers'])
     logger.info(f"Dataset loaded: {len(train_dataset)} for training, {len(val_dataset)} for validation.")
+    
+    verify_and_save_samples(train_dataset, common_cfg, train_cfg)
 
     best_val_loss = np.inf
     early_stop_counter = 0
@@ -150,6 +215,10 @@ def main():
     logger.info("--- Starting Training ---")
     for epoch in range(train_cfg['epochs']):
         train_loss = train_one_epoch(model, raft_model, raft_transforms, train_loader, optimizer, device, focal_loss, dice_loss, l1_loss, writer, epoch, train_cfg)
+        
+        if train_loss == -1:
+            break
+            
         val_loss = validate(model, val_loader, device, focal_loss, dice_loss, train_cfg)
         
         logger.info(f"Epoch {epoch+1}/{train_cfg['epochs']} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f}")
