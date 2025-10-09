@@ -2,6 +2,24 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+class SEBlock(nn.Module):
+    """Squeeze-and-Excitation Attention Block"""
+    def __init__(self, channel, reduction=16):
+        super(SEBlock, self).__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.fc = nn.Sequential(
+            nn.Linear(channel, channel // reduction, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Linear(channel // reduction, channel, bias=False),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        b, c, _, _ = x.size()
+        y = self.avg_pool(x).view(b, c)
+        y = self.fc(y).view(b, c, 1, 1)
+        return x * y.expand_as(x)
+
 class ConvLSTMCell(nn.Module):
     def __init__(self, input_dim, hidden_dim, kernel_size, bias=True):
         super(ConvLSTMCell, self).__init__()
@@ -9,7 +27,7 @@ class ConvLSTMCell(nn.Module):
         padding = kernel_size[0] // 2, kernel_size[1] // 2
         self.conv = nn.Conv2d(
             in_channels=input_dim + hidden_dim,
-            out_channels=4 * hidden_dim, # i, f, o, g gates
+            out_channels=4 * hidden_dim,
             kernel_size=kernel_size,
             padding=padding,
             bias=bias
@@ -20,12 +38,10 @@ class ConvLSTMCell(nn.Module):
         combined = torch.cat([input_tensor, h_cur], dim=1)
         combined_conv = self.conv(combined)
         cc_i, cc_f, cc_o, cc_g = torch.split(combined_conv, self.hidden_dim, dim=1)
-
         i = torch.sigmoid(cc_i)
         f = torch.sigmoid(cc_f)
         o = torch.sigmoid(cc_o)
         g = torch.tanh(cc_g)
-
         c_next = f * c_cur + i * g
         h_next = o * torch.tanh(c_next)
         return h_next, c_next
@@ -43,6 +59,8 @@ class STDModule(nn.Module):
         for in_channels in in_channels_list:
             self.feature_fusion_convs.append(nn.Conv2d(in_channels, hidden_dim, kernel_size=1))
 
+        self.attention = SEBlock(hidden_dim)
+        
         self.conv_lstm = ConvLSTMCell(input_dim=hidden_dim, hidden_dim=hidden_dim, kernel_size=(3, 3))
 
         self.seg_head = nn.Sequential(
@@ -56,7 +74,6 @@ class STDModule(nn.Module):
         batch_size = multi_scale_features_seq_list[0].shape[1]
         device = multi_scale_features_seq_list[0].device
         
-        # ConvLSTM은 가장 작은 특징맵(리스트의 첫 번째 요소)을 기준으로 연산
         lstm_size = multi_scale_features_seq_list[0].shape[3:]
         h, c = self.conv_lstm.init_hidden(batch_size, lstm_size, device)
 
@@ -68,12 +85,12 @@ class STDModule(nn.Module):
                 feature_t_resized = F.interpolate(feature_t, size=lstm_size, mode='bilinear', align_corners=False)
                 fused_feature += feature_t_resized
             
+            fused_feature = self.attention(fused_feature)
+
             h, c = self.conv_lstm(fused_feature, (h, c))
             pred_mask = self.seg_head(h)
             
-            # 전달받은 target_size를 사용하여 최종 크기로 업샘플링
             pred_mask_upsampled = F.interpolate(pred_mask, size=target_size, mode='bilinear', align_corners=False)
-            
             outputs.append(pred_mask_upsampled)
         
         return torch.stack(outputs, dim=0).permute(1, 0, 2, 3, 4)
