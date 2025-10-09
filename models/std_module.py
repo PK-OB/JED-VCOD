@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 class ConvLSTMCell(nn.Module):
     def __init__(self, input_dim, hidden_dim, kernel_size, bias=True):
-        super().__init__()
+        super(ConvLSTMCell, self).__init__()
         self.hidden_dim = hidden_dim
         padding = kernel_size[0] // 2, kernel_size[1] // 2
         self.conv = nn.Conv2d(
@@ -37,7 +37,7 @@ class ConvLSTMCell(nn.Module):
 
 class STDModule(nn.Module):
     def __init__(self, in_channels_list, hidden_dim=128):
-        super().__init__()
+        super(STDModule, self).__init__()
         self.hidden_dim = hidden_dim
         self.feature_fusion_convs = nn.ModuleList()
         for in_channels in in_channels_list:
@@ -51,35 +51,28 @@ class STDModule(nn.Module):
             nn.Conv2d(hidden_dim // 2, 1, kernel_size=1)
         )
 
-    def forward(self, multi_scale_features_seq_list):
+    def forward(self, multi_scale_features_seq_list, target_size):
         seq_len = multi_scale_features_seq_list[0].shape[0]
         batch_size = multi_scale_features_seq_list[0].shape[1]
         device = multi_scale_features_seq_list[0].device
-
-        # ▼▼▼ 수정된 부분 ▼▼▼
-        # base_size를 특징맵 리스트의 마지막 요소(가장 해상도가 높음)로 설정합니다.
-        base_size = multi_scale_features_seq_list[-1].shape[3:] # 예: (224, 224)
         
-        # ConvLSTM은 가장 작은 특징맵을 기준으로 연산하는 것이 효율적입니다.
-        lstm_size = multi_scale_features_seq_list[0].shape[3:] # 예: (28, 28)
+        # ConvLSTM은 가장 작은 특징맵(리스트의 첫 번째 요소)을 기준으로 연산
+        lstm_size = multi_scale_features_seq_list[0].shape[3:]
         h, c = self.conv_lstm.init_hidden(batch_size, lstm_size, device)
 
         outputs = []
         for t in range(seq_len):
             fused_feature = torch.zeros(batch_size, self.hidden_dim, *lstm_size, device=device)
-            # 모든 스케일의 특징맵을 LSTM 크기로 통일하여 융합합니다.
             for i, features_seq in enumerate(multi_scale_features_seq_list):
                 feature_t = self.feature_fusion_convs[i](features_seq[t])
                 feature_t_resized = F.interpolate(feature_t, size=lstm_size, mode='bilinear', align_corners=False)
                 fused_feature += feature_t_resized
             
             h, c = self.conv_lstm(fused_feature, (h, c))
-            # seg_head를 통과한 예측 마스크는 아직 작은 크기(lstm_size)입니다.
             pred_mask = self.seg_head(h)
             
-            # ▼▼▼ 수정된 부분 ▼▼▼
-            # 예측된 마스크를 최종 목표 크기(base_size)로 업샘플링합니다.
-            pred_mask_upsampled = F.interpolate(pred_mask, size=base_size, mode='bilinear', align_corners=False)
+            # 전달받은 target_size를 사용하여 최종 크기로 업샘플링
+            pred_mask_upsampled = F.interpolate(pred_mask, size=target_size, mode='bilinear', align_corners=False)
             
             outputs.append(pred_mask_upsampled)
         

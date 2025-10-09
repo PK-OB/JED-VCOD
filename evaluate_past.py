@@ -63,15 +63,9 @@ def visualize_predictions(model, dataset, device, eval_cfg, common_cfg):
             axes[2, i].set_title("Predicted Mask")
             axes[2, i].axis('off')
 
-    # 이미지를 저장하기 전에 해당 경로의 폴더가 존재하는지 확인하고, 없으면 생성합니다.
-    save_path = eval_cfg['visualization_path']
-    save_dir = os.path.dirname(save_path)
-    if save_dir:
-        os.makedirs(save_dir, exist_ok=True)
-    
     plt.tight_layout(rect=[0, 0, 1, 0.96])
-    plt.savefig(save_path)
-    print(f"Visualization image saved to: {save_path}")
+    plt.savefig(eval_cfg['visualization_path'])
+    print(f"Visualization image saved to: {eval_cfg['visualization_path']}")
 
 def main():
     common_cfg = cfg.common
@@ -148,10 +142,12 @@ def main():
                     pred_mask_np = predicted_masks[i, j].squeeze().cpu().numpy()
                     gt_mask_np = ground_truth_masks[i, j].squeeze().cpu().numpy()
                     
+                    # float32 (0~1) 예측값을 uint8 (0~255) 이미지 형식으로 변환합니다.
                     pred_mask_uint8 = (pred_mask_np * 255).astype(np.uint8)
+                    
+                    # ground truth도 0 또는 255 값을 갖는 uint8 형식으로 변환합니다.
                     gt_mask_uint8 = (gt_mask_np > 0.5).astype(np.uint8) * 255
 
-                    # 정답 마스크에 객체가 있는 경우에만 지표를 계산합니다.
                     if gt_mask_uint8.max() > 0:
                         metrics.step(pred=pred_mask_uint8, gt=gt_mask_uint8)
 
@@ -182,10 +178,10 @@ def main():
     avg_warping_error = total_warping_error / temporal_comparison_count if temporal_comparison_count > 0 else 0
 
     print("\n--- Evaluation Results ---")
-    print(f"S-measure (Sm):           {results.get('Sm', float('nan')):.4f}")
-    print(f"E-measure (Em):           {results.get('Em', float('nan')):.4f}")
-    print(f"Weighted F-measure (wFm): {results.get('wFm', float('nan')):.4f}")
-    print(f"Mean Absolute Error (MAE):{results.get('MAE', float('nan')):.4f}")
+    print(f"S-measure (Sm):           {results['Sm']:.4f}")
+    print(f"E-measure (Em):           {results['Em']:.4f}")
+    print(f"Weighted F-measure (wFm): {results['wFm']:.4f}")
+    print(f"Mean Absolute Error (MAE):{results['MAE']:.4f}")
     print(f"Warping Error:            {avg_warping_error:.4f}")
     print("--------------------------")
 
