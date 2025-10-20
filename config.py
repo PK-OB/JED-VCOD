@@ -36,7 +36,7 @@ class Config:
         'patience': 100, # ReduceLROnPlateau: Early stopping patience
         'scheduler_patience': 5, # ReduceLROnPlateau: Scheduler patience
         'scheduler_factor': 0.5,
-        'checkpoint_name': '1009_1603_cutmix.pth',
+        'checkpoint_name': '1010_test.pth',
         'debug_image_interval': 5,
     }
     
