@@ -6,12 +6,19 @@ import matplotlib.pyplot as plt
 from torchvision.models.optical_flow import raft_large, Raft_Large_Weights
 from torch.utils.data import DataLoader
 from torch.nn.functional import grid_sample
+import torch.nn.functional as F # (NameError 해결을 위해 import)
 from tqdm import tqdm
 from utils.py_sod_metrics import SODMetrics
 
 from config import cfg
+
+# import 문 수정 (main_model 추가)
 from models.eval_models import JED_VCOD_Fauna_Simplified_Eval, YourSOTAVCODModel, YourSOTAEnhancerModel
+from models.main_model import JED_VCOD_Fauna_Simplified 
+
+# 'FolderImageMaskDataset' 임포트
 from datasets.moca_video_dataset import MoCAVideoDataset
+from datasets.folder_mask_dataset import FolderImageMaskDataset 
 
 def unnormalize(tensor, mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)):
     """정규화된 이미지 텐서를 원래 이미지로 되돌리는 함수"""
@@ -23,18 +30,36 @@ def unnormalize(tensor, mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)):
 def visualize_predictions(model, dataset, device, eval_cfg, common_cfg):
     """모델의 예측 결과를 시각화하여 이미지 파일로 저장하는 함수"""
     print("\n--- Generating visualization ---")
-    if len(dataset) < 5:
-        print("Dataset has fewer than 5 samples, skipping visualization.")
+    
+    # Subset과 일반 Dataset 모두 처리
+    if isinstance(dataset, torch.utils.data.Subset):
+        dataset_to_sample = dataset.dataset
+        indices_to_sample_from = dataset.indices
+    else:
+        dataset_to_sample = dataset
+        indices_to_sample_from = list(range(len(dataset)))
+        
+    if len(indices_to_sample_from) < 5:
+        print(f"Dataset has only {len(indices_to_sample_from)} samples, skipping visualization.")
         return
+        
+    random_indices_from_list = random.sample(indices_to_sample_from, 5)
 
     fig, axes = plt.subplots(3, 5, figsize=(20, 12))
     fig.suptitle('Prediction Visualization: 5 Random Samples', fontsize=16)
-    random_indices = random.sample(range(len(dataset)), 5)
 
     model.eval()
     with torch.no_grad():
-        for i, idx in enumerate(tqdm(random_indices, desc="Visualizing")):
-            video_clip, mask_clip = dataset[idx]
+        for i, idx in enumerate(tqdm(random_indices_from_list, desc="Visualizing")):
+            data_sample = dataset_to_sample[idx] # 원본 데이터셋에서 idx로 가져옴
+            if data_sample is None: continue
+            video_clip, mask_clip = data_sample
+            
+            # mask_clip이 비어있는 경우(예: 일부 샘플에 GT가 없는 경우) 처리
+            if mask_clip is None or mask_clip.nelement() == 0:
+                print(f"Skipping sample {idx} due to empty mask_clip.")
+                continue
+                
             video_clip_batch = video_clip.unsqueeze(0).to(device)
             
             predicted_logits = model(video_clip_batch)
@@ -66,7 +91,7 @@ def visualize_predictions(model, dataset, device, eval_cfg, common_cfg):
     # 이미지를 저장하기 전에 해당 경로의 폴더가 존재하는지 확인하고, 없으면 생성합니다.
     save_path = eval_cfg['visualization_path']
     save_dir = os.path.dirname(save_path)
-    if save_dir:
+    if save_dir and not os.path.exists(save_dir):
         os.makedirs(save_dir, exist_ok=True)
     
     plt.tight_layout(rect=[0, 0, 1, 0.96])
@@ -85,17 +110,20 @@ def main():
 
     enhancer_model = None
     if eval_cfg['experiment'] == 'baseline_b':
-        if not eval_cfg['enhancer_checkpoint_path']:
+        if not eval_cfg.get('enhancer_checkpoint_path'): # .get()으로 안전하게 접근
             raise ValueError("Baseline B requires 'enhancer_checkpoint_path' in config.py")
         enhancer_model = YourSOTAEnhancerModel().to(device)
         enhancer_model.load_state_dict(torch.load(eval_cfg['enhancer_checkpoint_path'], map_location=device))
         enhancer_model.eval()
         print(f"Loaded Enhancer model from: {eval_cfg['enhancer_checkpoint_path']}")
 
-    if eval_cfg['experiment'] in ['proposed', 'ablation_1']:
-        model = JED_VCOD_Fauna_Simplified_Eval(use_dae=True)
+    # 모델 초기화 로직 (main_model 사용)
+    if eval_cfg['experiment'] == 'proposed':
+        model = JED_VCOD_Fauna_Simplified() # <--- 학습에 사용한 모델
+    elif eval_cfg['experiment'] == 'ablation_1':
+        model = JED_VCOD_Fauna_Simplified_Eval(use_dae=True) # (기존 eval 모델)
     elif eval_cfg['experiment'] == 'ablation_2':
-        model = JED_VCOD_Fauna_Simplified_Eval(use_dae=False)
+        model = JED_VCOD_Fauna_Simplified_Eval(use_dae=False) # (기존 eval 모델)
     elif eval_cfg['experiment'] in ['baseline_a', 'baseline_b']:
         model = YourSOTAVCODModel()
     else:
@@ -104,7 +132,18 @@ def main():
     state_dict = torch.load(eval_cfg['checkpoint_path'], map_location=device)
     if all(key.startswith('module.') for key in state_dict.keys()):
         state_dict = {k.replace('module.', ''): v for k, v in state_dict.items()}
-    model.load_state_dict(state_dict)
+    
+    # 가중치 로드 (엄격하게)
+    try:
+        model.load_state_dict(state_dict)
+    except RuntimeError as e:
+        print("="*50)
+        print("!!! 모델 가중치 로드 중 에러 발생 !!!")
+        print("학습(main_model.py)과 평가(evaluate.py)에 사용된 모델 아키텍처가 여전히 다른지 확인하세요.")
+        print(f"에러 메시지: {e}")
+        print("="*50)
+        return
+        
     model.to(device)
     model.eval()
     print(f"Loaded Detection model from: {eval_cfg['checkpoint_path']}")
@@ -115,19 +154,61 @@ def main():
     raft_model.eval()
     l1_loss = torch.nn.L1Loss()
 
-    test_dataset = MoCAVideoDataset(
-        synthetic_data_root=eval_cfg['data_root'],
-        annotation_file=eval_cfg['annotation_file'], 
-        clip_len=common_cfg['clip_len']
-    )
-    test_loader = DataLoader(test_dataset, batch_size=eval_cfg['batch_size'], shuffle=False, num_workers=common_cfg['num_workers'])
+
+    # config의 'eval_dataset_type'에 따라 분기 처리
+    # -----------------------------------------------------------------
+    eval_dataset_type = eval_cfg.get('eval_dataset_type', 'moca_csv') # 기본값을 'moca_csv'로 설정
+
+    if eval_dataset_type == 'folder':
+        print(f"Using 'FolderImageMaskDataset' for evaluation from: {eval_cfg['eval_folder_data_root']}")
+        if not eval_cfg.get('eval_folder_data_root'):
+            raise ValueError("eval_dataset_type is 'folder', but 'eval_folder_data_root' is not set in config.py")
+        
+        test_dataset = FolderImageMaskDataset(
+            root_dir=eval_cfg['eval_folder_data_root'],
+            image_folder_name=eval_cfg.get('eval_image_folder_name', 'Imgs'),
+            mask_folder_name=eval_cfg.get('eval_mask_folder_name', 'GT'),
+            clip_len=common_cfg['clip_len'],
+            is_train=False,  # 평가 모드
+            use_augmentation=False # 평가 시 증강 사용 안 함
+        )
+    
+    elif eval_dataset_type == 'moca_csv':
+        print(f"Using 'MoCAVideoDataset' (CSV-based) for evaluation from: {eval_cfg['data_root']}")
+        test_dataset = MoCAVideoDataset(
+            synthetic_data_root=eval_cfg['data_root'],
+            annotation_file=eval_cfg['annotation_file'], 
+            clip_len=common_cfg['clip_len']
+        )
+    else:
+        raise ValueError(f"Unknown eval_dataset_type: {eval_dataset_type}")
+    # -----------------------------------------------------------------
+    
+
+    # collate_fn 추가 (데이터셋에서 None 반환 시 처리)
+    def collate_fn(batch):
+        batch = list(filter(lambda x: x is not None, batch))
+        if not batch: return None, None
+        return torch.utils.data.dataloader.default_collate(batch)
+    
+    test_loader = DataLoader(test_dataset, batch_size=eval_cfg['batch_size'], shuffle=False, num_workers=common_cfg['num_workers'], collate_fn=collate_fn)
 
     metrics = SODMetrics()
     total_warping_error = 0.0
     temporal_comparison_count = 0
 
     with torch.no_grad():
-        for video_clip, ground_truth_masks in tqdm(test_loader, desc="Evaluating"):
+        for batch_data in tqdm(test_loader, desc="Evaluating"):
+            # collate_fn에서 (None, None)을 반환한 경우 건너뜁니다.
+            if batch_data[0] is None:
+                continue
+                
+            video_clip, ground_truth_masks = batch_data
+            
+            # collate fn을 통과했음에도 ground_truth_masks가 비어있는 엣지 케이스 처리
+            if ground_truth_masks is None:
+                continue
+                
             video_clip = video_clip.to(device)
             ground_truth_masks = ground_truth_masks.to(device)
 
@@ -141,11 +222,17 @@ def main():
             predicted_logits = model(video_for_detection)
             predicted_masks = torch.sigmoid(predicted_logits)
 
-            b, t, c, h, w = predicted_masks.shape
+            # predicted_masks의 shape (B, T, 1, H, W)를 가져옵니다.
+            b, t, _, h, w = predicted_masks.shape
 
             for i in range(b):
                 for j in range(t):
                     pred_mask_np = predicted_masks[i, j].squeeze().cpu().numpy()
+                    
+                    # ground_truth_masks가 배치 크기보다 적게 반환되는 경우 방지
+                    if i >= ground_truth_masks.shape[0] or j >= ground_truth_masks.shape[1]:
+                        continue
+                        
                     gt_mask_np = ground_truth_masks[i, j].squeeze().cpu().numpy()
                     
                     pred_mask_uint8 = (pred_mask_np * 255).astype(np.uint8)
@@ -155,28 +242,48 @@ def main():
                     if gt_mask_uint8.max() > 0:
                         metrics.step(pred=pred_mask_uint8, gt=gt_mask_uint8)
 
-            if t > 1:
-                img1_batch = video_clip[:, :-1].reshape(-1, 3, h, w)
-                img2_batch = video_clip[:, 1:].reshape(-1, 3, h, w)
-                img1_transformed, img2_transformed = raft_transforms(img1_batch, img2_batch)
-                flows = raft_model(img1_transformed, img2_transformed)[-1]
-                flows_unbatched = flows.view(b, t - 1, 2, h, w)
-
-                for i in range(t - 1):
-                    flow_i = flows_unbatched[:, i]
-                    grid_y, grid_x = torch.meshgrid(torch.arange(h, device=device), torch.arange(w, device=device), indexing='ij')
+            if t > 1 and total_warping_error >= 0: # Warping Error 계산을 원치 않으면 -1로 설정
+                try:
+                    # video_clip의 H, W를 사용해야 합니다 (마스크와 크기가 다를 수 있음)
+                    _, _, _, h_img, w_img = video_clip.shape
+                    img1_batch = video_clip[:, :-1].reshape(-1, 3, h_img, w_img)
+                    img2_batch = video_clip[:, 1:].reshape(-1, 3, h_img, w_img)
+                    
+                    # RAFT는 특정 크기의 입력이 필요할 수 있으므로 transforms 적용
+                    img1_transformed, img2_transformed = raft_transforms(img1_batch, img2_batch)
+                    flows = raft_model(img1_transformed, img2_transformed)[-1]
+                    
+                    # flow의 H, W는 raft_transforms에 의해 결정됩니다.
+                    _, _, h_flow, w_flow = flows.shape
+                    flows_unbatched = flows.view(b, t - 1, 2, h_flow, w_flow)
+                    
+                    # 그리드 생성 시 flow의 크기(h_flow, w_flow) 기준
+                    grid_y, grid_x = torch.meshgrid(torch.arange(h_flow, device=device), torch.arange(w_flow, device=device), indexing='ij')
                     grid = torch.stack((grid_x, grid_y), 2).float()
-                    displacement = flow_i.permute(0, 2, 3, 1)
-                    warped_grid = grid + displacement
-                    warped_grid[..., 0] = 2.0 * warped_grid[..., 0] / (w - 1) - 1.0
-                    warped_grid[..., 1] = 2.0 * warped_grid[..., 1] / (h - 1) - 1.0
-                    
-                    mask_t = predicted_masks[:, i]
-                    mask_t_plus_1 = predicted_masks[:, i + 1]
-                    mask_t_warped = grid_sample(mask_t, warped_grid, mode='bilinear', padding_mode='border', align_corners=False)
-                    
-                    total_warping_error += l1_loss(mask_t_warped, mask_t_plus_1).item()
-                    temporal_comparison_count += b
+
+                    for i in range(t - 1):
+                        flow_i = flows_unbatched[:, i] # (B, 2, h_flow, w_flow)
+                        
+                        # grid_sample을 위해 마스크를 flow 크기로 리사이즈
+                        mask_t = F.interpolate(predicted_masks[:, i], size=(h_flow, w_flow), mode='bilinear', align_corners=False)
+                        mask_t_plus_1 = F.interpolate(predicted_masks[:, i+1], size=(h_flow, w_flow), mode='bilinear', align_corners=False)
+                        
+                        displacement = flow_i.permute(0, 2, 3, 1) # (B, h_flow, w_flow, 2)
+                        warped_grid = grid + displacement
+                        
+                        # 정규화
+                        warped_grid[..., 0] = 2.0 * warped_grid[..., 0] / (w_flow - 1) - 1.0
+                        warped_grid[..., 1] = 2.0 * warped_grid[..., 1] / (h_flow - 1) - 1.0
+                        
+                        mask_t_warped = grid_sample(mask_t, warped_grid, mode='bilinear', padding_mode='border', align_corners=False)
+                        
+                        total_warping_error += l1_loss(mask_t_warped, mask_t_plus_1).item()
+                        temporal_comparison_count += b
+                except Exception as e:
+                    # SyntaxError가 발생했던 부분 (한 줄로 수정됨)
+                    print(f"\nWarping Error calculation failed: {e}") 
+                    print("Skipping Warping Error calculation for subsequent batches.")
+                    total_warping_error = -1 # 오류 발생 시 더 이상 계산 안 함
 
     results = metrics.get_results()
     avg_warping_error = total_warping_error / temporal_comparison_count if temporal_comparison_count > 0 else 0
