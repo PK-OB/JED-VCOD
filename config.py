@@ -1,5 +1,5 @@
 class Config:
-    # --- 공통 설정 ---
+    # --- 공통 설정 ---1
     common = {
         'gpu_ids': '0,1',
         'clip_len': 8,
