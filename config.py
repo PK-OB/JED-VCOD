@@ -43,16 +43,16 @@ class Config:
     # --- 평가 설정 ---
     evaluate = {
         'experiment': 'proposed',
-        'batch_size': 32,
+        'batch_size': 16,
         'visualization_path': 'evaluation_results/new_test_set_visualization8.png', # (저장 경로 예시)
-        'checkpoint_path': 'checkpoints/1023_1129_mainmodelChange.pth', #           (평가할 모델 경로)
+        'checkpoint_path': 'checkpoints/1024_1543.pth', #           (평가할 모델 경로)
 
         # ▼▼▼ 1. 여기에 새로운 설정을 추가합니다 ▼▼▼
         # -----------------------------------------------------------------
         'eval_dataset_type': 'folder',  # 'folder' 또는 'moca_csv' (기본값)
         
         # 'folder' 타입을 사용할 경우
-        'eval_folder_data_root': '/home/sjy/paper/JED-VCOD/data/MoCA-Mask/Train_Night', # <-- 여기에 새 테스트셋 경로 입력!
+        'eval_folder_data_root': '/home/sjy/paper/JED-VCOD/data/MoCA-Mask/Test_Night', # <-- 여기에 새 테스트셋 경로 입력!
         'eval_image_folder_name': 'Imgs',
         'eval_mask_folder_name': 'GT',
         # -----------------------------------------------------------------
