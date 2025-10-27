@@ -1,3 +1,5 @@
+# pk-ob/jed-vcod/JED-VCOD-cc543b29cefb3a45b940bfd01f42c33af7a6bb25/models/main_model.py
+
 import torch
 import torch.nn as nn
 # import segmentation_models_pytorch as smp # (더 이상 사용하지 않음)
@@ -27,8 +29,10 @@ class JED_VCOD_Fauna_Simplified(nn.Module):
         dae_input = video_clip.view(batch_size * seq_len, c, h, w)
 
         # ▼▼▼ 수정된 DAEModule의 forward() 호출 ▼▼▼
-        # 반환 순서: [512, 256, 128, 64] 채널 (저해상도 -> 고해상도)
-        multi_scale_features_flat = self.dae(dae_input)
+        # multi_scale_features_flat: 특징 맵 리스트
+        # reconstructed_images_flat: 복원된 (주간) 이미지 (B*T, C, H, W)
+        multi_scale_features_flat, reconstructed_images_flat = self.dae(dae_input)
+        # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
         # STD 모듈이 DAEModule의 반환 순서([512, 256, 128, 64])를 그대로 기대하므로
         # reverse() 호출은 필요 없습니다. 이 줄을 확실히 제거합니다.
@@ -48,4 +52,6 @@ class JED_VCOD_Fauna_Simplified(nn.Module):
         # 입력 리스트도 동일한 순서이므로 채널 수가 일치하게 됩니다.
         predicted_masks_seq = self.std(multi_scale_features_seq_list, target_size=(h, w))
 
-        return predicted_masks_seq
+        # ▼▼▼ 수정된 부분: 분할 마스크와 복원된 이미지를 함께 반환 ▼▼▼
+        return predicted_masks_seq, reconstructed_images_flat
+        # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲

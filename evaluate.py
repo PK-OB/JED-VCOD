@@ -1,3 +1,5 @@
+# pk-ob/jed-vcod/JED-VCOD-cc543b29cefb3a45b940bfd01f42c33af7a6bb25/evaluate.py
+
 import torch
 import os
 import numpy as np
@@ -45,15 +47,19 @@ def visualize_predictions(model, dataset, device, eval_cfg, common_cfg):
         
     random_indices_from_list = random.sample(indices_to_sample_from, 5)
 
-    fig, axes = plt.subplots(3, 5, figsize=(20, 12))
+    # ▼▼▼ 수정된 부분: 4x5 플롯 (야간/주간(복원)/마스크(GT)/마스크(Pred)) ▼▼▼
+    fig, axes = plt.subplots(4, 5, figsize=(20, 16))
     fig.suptitle('Prediction Visualization: 5 Random Samples', fontsize=16)
+    # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
     model.eval()
     with torch.no_grad():
         for i, idx in enumerate(tqdm(random_indices_from_list, desc="Visualizing")):
             data_sample = dataset_to_sample[idx] # 원본 데이터셋에서 idx로 가져옴
             if data_sample is None: continue
-            video_clip, mask_clip = data_sample
+            
+            # ▼▼▼ 수정된 부분: 3개 항목 수신 ▼▼▼
+            video_clip, mask_clip, original_day_clip = data_sample
             
             # mask_clip이 비어있는 경우(예: 일부 샘플에 GT가 없는 경우) 처리
             if mask_clip is None or mask_clip.nelement() == 0:
@@ -62,31 +68,45 @@ def visualize_predictions(model, dataset, device, eval_cfg, common_cfg):
                 
             video_clip_batch = video_clip.unsqueeze(0).to(device)
             
-            predicted_logits = model(video_clip_batch)
+            # ▼▼▼ 수정된 부분: 모델이 2개 항목 반환 ▼▼▼
+            predicted_logits, reconstructed_images_flat = model(video_clip_batch)
             predicted_mask = torch.sigmoid(predicted_logits)
+            
+            # (B*T, C, H, W) -> (B, T, C, H, W)
+            b, t, c, h, w = video_clip_batch.shape
+            reconstructed_images = reconstructed_images_flat.view(b, t, c, h, w)
+            # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
             frame_idx = common_cfg['clip_len'] // 2
             
-            # 1. 원본 이미지
+            # 1. 원본 야간 이미지 (입력)
             image_tensor = video_clip[frame_idx]
             image_to_show = unnormalize(image_tensor).cpu().numpy().transpose(1, 2, 0)
             axes[0, i].imshow(np.clip(image_to_show, 0, 1))
-            axes[0, i].set_title(f"Sample {idx}\nOriginal Image")
+            axes[0, i].set_title(f"Sample {idx}\nOriginal Night Image")
             axes[0, i].axis('off')
 
-            # 2. 정답 마스크
+            # ▼▼▼ 수정된 부분: 2. 복원된 주간 이미지 (출력) ▼▼▼
+            recon_image_tensor = reconstructed_images.squeeze(0)[frame_idx]
+            recon_image_to_show = recon_image_tensor.cpu().numpy().transpose(1, 2, 0)
+            axes[1, i].imshow(np.clip(recon_image_to_show, 0, 1))
+            axes[1, i].set_title("Reconstructed Day Image")
+            axes[1, i].axis('off')
+            # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+            # 3. 정답 마스크
             gt_mask_tensor = mask_clip[frame_idx]
             gt_mask_to_show = gt_mask_tensor.squeeze().cpu().numpy()
-            axes[1, i].imshow(gt_mask_to_show, cmap='gray')
-            axes[1, i].set_title("Ground Truth Mask")
-            axes[1, i].axis('off')
+            axes[2, i].imshow(gt_mask_to_show, cmap='gray')
+            axes[2, i].set_title("Ground Truth Mask")
+            axes[2, i].axis('off')
             
-            # 3. 예측 마스크
+            # 4. 예측 마스크
             pred_mask_tensor = predicted_mask.squeeze(0)[frame_idx]
             pred_mask_to_show = pred_mask_tensor.squeeze().cpu().numpy()
-            axes[2, i].imshow(pred_mask_to_show, cmap='gray')
-            axes[2, i].set_title("Predicted Mask")
-            axes[2, i].axis('off')
+            axes[3, i].imshow(pred_mask_to_show, cmap='gray')
+            axes[3, i].set_title("Predicted Mask")
+            axes[3, i].axis('off')
 
     # 이미지를 저장하기 전에 해당 경로의 폴더가 존재하는지 확인하고, 없으면 생성합니다.
     save_path = eval_cfg['visualization_path']
@@ -164,14 +184,22 @@ def main():
         if not eval_cfg.get('eval_folder_data_root'):
             raise ValueError("eval_dataset_type is 'folder', but 'eval_folder_data_root' is not set in config.py")
         
+        # ▼▼▼ 수정된 부분: 'eval_original_data_root'를 config에서 읽어와 전달 ▼▼▼
+        if not eval_cfg.get('eval_original_data_root'):
+             raise ValueError("config.py의 evaluate 섹션에 'eval_original_data_root' (원본 주간 테스트셋 경로) 설정이 필요합니다.")
+        
+        print(f"Loading original day images for evaluation from: {eval_cfg['eval_original_data_root']}")
+        
         test_dataset = FolderImageMaskDataset(
             root_dir=eval_cfg['eval_folder_data_root'],
+            original_data_root=eval_cfg['eval_original_data_root'], # <-- 수정됨
             image_folder_name=eval_cfg.get('eval_image_folder_name', 'Imgs'),
             mask_folder_name=eval_cfg.get('eval_mask_folder_name', 'GT'),
             clip_len=common_cfg['clip_len'],
             is_train=False,  # 평가 모드
             use_augmentation=False # 평가 시 증강 사용 안 함
         )
+        # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
     
     elif eval_dataset_type == 'moca_csv':
         print(f"Using 'MoCAVideoDataset' (CSV-based) for evaluation from: {eval_cfg['data_root']}")
@@ -188,7 +216,7 @@ def main():
     # collate_fn 추가 (데이터셋에서 None 반환 시 처리)
     def collate_fn(batch):
         batch = list(filter(lambda x: x is not None, batch))
-        if not batch: return None, None
+        if not batch: return None, None, None # <-- 3개 반환하도록 수정
         return torch.utils.data.dataloader.default_collate(batch)
     
     test_loader = DataLoader(test_dataset, batch_size=eval_cfg['batch_size'], shuffle=False, num_workers=common_cfg['num_workers'], collate_fn=collate_fn)
@@ -196,14 +224,20 @@ def main():
     metrics = SODMetrics()
     total_warping_error = 0.0
     temporal_comparison_count = 0
+    
+    # ▼▼▼ 수정된 부분: Enhancement Loss(L1)를 평가 시에도 계산 ▼▼▼
+    total_enhancement_loss = 0.0
+    enhancement_comparison_count = 0
+    # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
     with torch.no_grad():
         for batch_data in tqdm(test_loader, desc="Evaluating"):
-            # collate_fn에서 (None, None)을 반환한 경우 건너뜁니다.
+            # collate_fn에서 (None, None, None)을 반환한 경우 건너뜁니다.
             if batch_data[0] is None:
                 continue
                 
-            video_clip, ground_truth_masks = batch_data
+            # ▼▼▼ 수정된 부분: 3개 항목 수신 ▼▼▼
+            video_clip, ground_truth_masks, original_day_images = batch_data
             
             # collate fn을 통과했음에도 ground_truth_masks가 비어있는 엣지 케이스 처리
             if ground_truth_masks is None:
@@ -211,6 +245,8 @@ def main():
                 
             video_clip = video_clip.to(device)
             ground_truth_masks = ground_truth_masks.to(device)
+            original_day_images = original_day_images.to(device) # <-- 추가
+            # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
             video_for_detection = video_clip
             if enhancer_model:
@@ -219,11 +255,19 @@ def main():
                 enhanced_frames = enhancer_model(enhancer_input)
                 video_for_detection = enhanced_frames.view(b, t, c, h, w)
             
-            predicted_logits = model(video_for_detection)
+            # ▼▼▼ 수정된 부분: 모델이 2개 항목 반환 ▼▼▼
+            predicted_logits, reconstructed_images_flat = model(video_for_detection)
             predicted_masks = torch.sigmoid(predicted_logits)
+            # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
             # predicted_masks의 shape (B, T, 1, H, W)를 가져옵니다.
             b, t, _, h, w = predicted_masks.shape
+            
+            # ▼▼▼ 수정된 부분: Enhancement Loss(L1) 계산 ▼▼▼
+            original_images_flat = original_day_images.view(b*t, 3, h, w)
+            total_enhancement_loss += l1_loss(reconstructed_images_flat, original_images_flat).item() * (b*t)
+            enhancement_comparison_count += (b*t)
+            # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
             for i in range(b):
                 for j in range(t):
@@ -287,6 +331,10 @@ def main():
 
     results = metrics.get_results()
     avg_warping_error = total_warping_error / temporal_comparison_count if temporal_comparison_count > 0 else 0
+    
+    # ▼▼▼ 수정된 부분: Enhancement L1 Loss 평균 계산 ▼▼▼
+    avg_enhancement_loss = total_enhancement_loss / enhancement_comparison_count if enhancement_comparison_count > 0 else 0
+    # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
     print("\n--- Evaluation Results ---")
     print(f"S-measure (Sm):           {results.get('Sm', float('nan')):.4f}")
@@ -294,6 +342,9 @@ def main():
     print(f"Weighted F-measure (wFm): {results.get('wFm', float('nan')):.4f}")
     print(f"Mean Absolute Error (MAE):{results.get('MAE', float('nan')):.4f}")
     print(f"Warping Error:            {avg_warping_error:.4f}")
+    # ▼▼▼ 수정된 부분: Enhancement L1 Loss 출력 ▼▼▼
+    print(f"Enhancement L1 Loss (↓): {avg_enhancement_loss:.4f}")
+    # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
     print("--------------------------")
 
     visualize_predictions(model, test_dataset, device, eval_cfg, common_cfg)

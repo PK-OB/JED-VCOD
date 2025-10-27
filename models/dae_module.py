@@ -1,3 +1,5 @@
+# pk-ob/jed-vcod/JED-VCOD-cc543b29cefb3a45b940bfd01f42c33af7a6bb25/models/dae_module.py
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -64,6 +66,17 @@ class DAEModule(nn.Module):
 
         # ContextGate 초기화 (입력 채널은 bottleneck과 동일)
         self.context_gate_generator = ContextGate(in_channels=features[-1] * 2)
+        
+        # ▼▼▼ 수정된 부분: 이미지 복원 헤드 추가 ▼▼▼
+        # 디코더의 첫 번째 블록(가장 고해상도) 출력 채널(features[0])을 입력으로 받음
+        self.reconstruction_head = nn.Sequential(
+            nn.Conv2d(features[0], features[0] // 2, kernel_size=3, padding=1, bias=False),
+            nn.BatchNorm2d(features[0] // 2),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(features[0] // 2, 3, kernel_size=1),
+            nn.Sigmoid() # 출력을 [0, 1] 범위로 매핑 (원본 주간 이미지와 비교 위함)
+        )
+        # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
     def forward(self, x):
         skip_connections = []
@@ -114,5 +127,11 @@ class DAEModule(nn.Module):
             # STD 모듈에 전달할 특징 맵 저장 (고해상도 -> 저해상도 순서로 저장됨)
             multi_scale_features.append(x)
 
+        # ▼▼▼ 수정된 부분: 복원된 이미지 생성 및 반환 ▼▼▼
+        # x는 이제 가장 고해상도 디코더 특징 맵 (예: 64채널)
+        reconstructed_image = self.reconstruction_head(x)
+        
         # multi_scale_features 리스트는 [Decoder_out_1(64ch), Decoder_out_2(128ch), ...] 순서
-        return multi_scale_features
+        # 특징 맵 리스트와 복원된 이미지를 함께 반환
+        return multi_scale_features, reconstructed_image
+        # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲

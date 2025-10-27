@@ -1,3 +1,5 @@
+# pk-ob/jed-vcod/JED-VCOD-cc543b29cefb3a45b940bfd01f42c33af7a6bb25/datasets/folder_mask_dataset.py
+
 import os
 from PIL import Image
 import torch
@@ -6,12 +8,15 @@ from torchvision import transforms
 import random
 
 class FolderImageMaskDataset(Dataset):
-    def __init__(self, root_dir, image_folder_name, mask_folder_name, clip_len=8, resolution=(224, 224), is_train=True, use_augmentation=True):
+    # ▼▼▼ 수정된 부분: 'original_data_root' 인자 추가 ▼▼▼
+    def __init__(self, root_dir, original_data_root, image_folder_name, mask_folder_name, clip_len=8, resolution=(224, 224), is_train=True, use_augmentation=True):
         self.root_dir = root_dir
+        self.original_data_root = original_data_root # <-- 추가
         self.clip_len = clip_len
         self.resolution = resolution
         self.is_train = is_train
         self.use_augmentation = use_augmentation
+        # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
         # ▼▼▼ 1. 로직 변경: 모든 이미지 경로를 찾는 대신, 클립의 '시작 프레임' 경로만 찾습니다. ▼▼▼
         self.clips = []
@@ -57,6 +62,14 @@ class FolderImageMaskDataset(Dataset):
             transforms.Resize(resolution, interpolation=transforms.InterpolationMode.NEAREST),
             transforms.ToTensor(),
         ])
+        
+        # ▼▼▼ 수정된 부분: 원본 주간 이미지용 Transform (정규화 X, 0~1 스케일) ▼▼▼
+        self.original_image_transform = transforms.Compose([
+            transforms.Resize(resolution),
+            transforms.ToTensor(), # [0, 1] 범위로 변환
+        ])
+        # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+        
         self.color_jitter = transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0.1)
 
     def __len__(self):
@@ -70,6 +83,10 @@ class FolderImageMaskDataset(Dataset):
         
         image_clip_tensors = []
         mask_clip_tensors = []
+        
+        # ▼▼▼ 수정된 부분 ▼▼▼
+        original_image_clip_tensors = [] # 원본 주간 이미지 텐서 리스트
+        # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
         # 데이터 증강(Augmentation)을 클립 단위로 일관되게 적용하기 위한 파라미터를 먼저 결정합니다.
         apply_flip = self.is_train and self.use_augmentation and random.random() > 0.5
@@ -79,6 +96,12 @@ class FolderImageMaskDataset(Dataset):
             for img_path, msk_path in zip(image_paths, mask_paths):
                 image = Image.open(img_path).convert("RGB")
                 mask = Image.open(msk_path).convert("L")
+                
+                # ▼▼▼ 수정된 부분: 원본 주간 이미지 로드 ▼▼▼
+                relative_path = os.path.relpath(img_path, self.root_dir)
+                original_img_path = os.path.join(self.original_data_root, relative_path)
+                original_image = Image.open(original_img_path).convert("RGB")
+                # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
                 # is_train 모드이고, use_augmentation이 True일 때만 데이터 증강을 적용합니다.
                 if self.is_train and self.use_augmentation:
@@ -86,12 +109,17 @@ class FolderImageMaskDataset(Dataset):
                     if apply_flip:
                         image = image.transpose(Image.FLIP_LEFT_RIGHT)
                         mask = mask.transpose(Image.FLIP_LEFT_RIGHT)
+                        original_image = original_image.transpose(Image.FLIP_LEFT_RIGHT) # <-- 추가
                     
-                    # 색상 변형은 각 프레임에 독립적으로 적용될 수 있습니다.
+                    # 색상 변형은 각 프레임에 독립적으로 적용될 수 있습니다. (야간 이미지만)
                     image = self.color_jitter(image)
 
                 image_clip_tensors.append(self.image_transform(image))
                 mask_clip_tensors.append(self.mask_transform(mask))
+                
+                # ▼▼▼ 수정된 부분 ▼▼▼
+                original_image_clip_tensors.append(self.original_image_transform(original_image))
+                # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
         except FileNotFoundError as e:
             print(f"Warning: File not found, skipping this clip. Details: {e}")
@@ -100,6 +128,9 @@ class FolderImageMaskDataset(Dataset):
         # 리스트에 담긴 각 프레임 텐서들을 stack하여 최종 클립 텐서를 만듭니다.
         image_clip = torch.stack(image_clip_tensors, dim=0)
         mask_clip = torch.stack(mask_clip_tensors, dim=0)
-
-        return image_clip, mask_clip
-        # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+        
+        # ▼▼▼ 수정된 부분 ▼▼▼
+        original_image_clip = torch.stack(original_image_clip_tensors, dim=0)
+        
+        return image_clip, mask_clip, original_image_clip # 3개 항목 반환
+        # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
