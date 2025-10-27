@@ -1,10 +1,15 @@
 # pk-ob/jed-vcod/JED-VCOD-cc543b29cefb3a45b940bfd01f42c33af7a6bb25/models/dae_module.py
+# (ResNet 스킵 연결 로직이 완전히 수정된 버전)
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torchvision import models
 
 class ConvBlock(nn.Module):
+    """
+    U-Net의 기본 구성 블록 (변경 없음)
+    """
     def __init__(self, in_channels, out_channels):
         super().__init__()
         self.conv = nn.Sequential(
@@ -18,120 +23,161 @@ class ConvBlock(nn.Module):
     def forward(self, x):
         return self.conv(x)
 
-# ▼▼▼ ContextGate 수정: 출력을 1채널로 변경 ▼▼▼
-class ContextGate(nn.Module):
+class AttentionGate(nn.Module):
     """
-    병목 특징 맵을 사용하여 문맥 기반 게이트(1채널 어텐션 맵)를 생성합니다.
+    Attention U-Net 게이트 (변경 없음)
     """
-    def __init__(self, in_channels):
-        super().__init__()
-        # 1x1 Conv로 채널 수를 1로 줄이고 Sigmoid로 (0~1) 사이의 게이트 맵 생성
-        self.gate_conv = nn.Sequential(
-            nn.Conv2d(in_channels, 1, kernel_size=1, bias=True), # <-- 채널 수를 1로 변경
+    def __init__(self, F_g, F_l, F_int):
+        super(AttentionGate, self).__init__()
+        self.W_g = nn.Sequential(
+            nn.Conv2d(F_g, F_int, kernel_size=1, stride=1, padding=0, bias=True),
+            nn.BatchNorm2d(F_int)
+        )
+        self.W_x = nn.Sequential(
+            nn.Conv2d(F_l, F_int, kernel_size=1, stride=1, padding=0, bias=True),
+            nn.BatchNorm2d(F_int)
+        )
+        self.psi = nn.Sequential(
+            nn.Conv2d(F_int, 1, kernel_size=1, stride=1, padding=0, bias=True),
+            nn.BatchNorm2d(1),
             nn.Sigmoid()
         )
+        self.relu = nn.ReLU(inplace=True)
 
-    def forward(self, x):
-        # x는 게이트를 생성할 병목 특징 맵
-        # 1채널 게이트를 생성하여 반환
-        return self.gate_conv(x)
-# ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+    def forward(self, g, x):
+        # g: Gating signal, x: Skip connection
+        g_prime = self.W_g(g)
+        x_prime = self.W_x(x)
+        
+        # g_prime (from decoder)을 x_prime (from skip)의 크기로 업샘플링
+        if g_prime.shape[2:] != x_prime.shape[2:]:
+            g_prime = F.interpolate(g_prime, size=x_prime.shape[2:], mode='bilinear', align_corners=False)
+            
+        psi_input = self.relu(g_prime + x_prime)
+        alpha = self.psi(psi_input)
+        
+        # 원본 스킵 연결(x)에 어텐션 맵(알파)을 곱함
+        return x * alpha
 
 class DAEModule(nn.Module):
     """
-    Context-Gated 스킵 커넥션을 사용하는 U-Net 기반 DAE 모듈.
+    SOTA 개선:
+    1. 인코더 (ResNet-34)
+    2. AttentionGate (버그 수정됨)
     """
-    def __init__(self, in_channels=3, features=[64, 128, 256, 512]): # features 기본값 설정
+    def __init__(self, in_channels=3, features=[64, 128, 256, 512]): # features는 하위 호환용
         super().__init__()
-        self.encoder_blocks = nn.ModuleList()
-        self.decoder_blocks = nn.ModuleList()
-        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.upconvs = nn.ModuleList()
-
-        # 인코더
-        current_channels = in_channels
-        for feature in features:
-            self.encoder_blocks.append(ConvBlock(current_channels, feature))
-            current_channels = feature
-
-        # 디코더
-        for feature in reversed(features):
-            self.upconvs.append(
-                nn.ConvTranspose2d(feature * 2, feature, kernel_size=2, stride=2)
-            )
-            # 디코더 블록의 입력 채널은 (업샘플링된 채널 + 게이트 적용된 스킵 커넥션 채널)
-            self.decoder_blocks.append(ConvBlock(feature * 2, feature))
-
-        self.bottleneck = ConvBlock(features[-1], features[-1] * 2)
-
-        # ContextGate 초기화 (입력 채널은 bottleneck과 동일)
-        self.context_gate_generator = ContextGate(in_channels=features[-1] * 2)
         
-        # ▼▼▼ 수정된 부분: 이미지 복원 헤드 추가 ▼▼▼
-        # 디코더의 첫 번째 블록(가장 고해상도) 출력 채널(features[0])을 입력으로 받음
+        resnet = models.resnet34(weights=models.ResNet34_Weights.IMAGENET1K_V1)
+        
+        if in_channels != 3:
+            self.init_conv = nn.Conv2d(in_channels, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        else:
+            self.init_conv = resnet.conv1 # 1/2
+
+        self.encoder0_0 = nn.Sequential(resnet.bn1, resnet.relu) # 1/2
+        self.encoder0_1 = resnet.maxpool # 1/4
+        self.encoder1 = resnet.layer1 # 64 ch, 1/4
+        self.encoder2 = resnet.layer2 # 128 ch, 1/8
+        self.encoder3 = resnet.layer3 # 256 ch, 1/16
+        self.encoder4 = resnet.layer4 # 512 ch, 1/32
+        
+        self.bottleneck = ConvBlock(512, 1024) # 1/32
+        
+        # ▼▼▼ [버그 수정] 디코더와 스킵 연결 채널 재정의 ▼▼▼
+        # 디코더 출력 채널
+        self.decoder_channels = [512, 256, 128, 64] 
+        # 스킵 연결 채널 (e3, e2, e1, x0_relu 순서)
+        self.skip_channels = [256, 128, 64, 64] 
+        # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+        self.upconvs = nn.ModuleList()
+        self.decoder_blocks = nn.ModuleList()
+        self.attention_gates = nn.ModuleList()
+        
+        in_ch = 1024 # Bottleneck 출력
+        
+        for i in range(len(self.decoder_channels)):
+            dec_ch = self.decoder_channels[i] # 512, 256, 128, 64
+            skip_ch = self.skip_channels[i]   # 256, 128, 64, 64
+            
+            # Upconv layer
+            self.upconvs.append(
+                nn.ConvTranspose2d(in_ch, dec_ch, kernel_size=2, stride=2)
+            )
+            
+            # Attention gate (Gating 'g': dec_ch, Skip 'x': skip_ch)
+            self.attention_gates.append(
+                AttentionGate(F_g=dec_ch, F_l=skip_ch, F_int=dec_ch // 2)
+            )
+            
+            # Decoder conv block (Input: Upconv channel + Gated Skip channel)
+            self.decoder_blocks.append(ConvBlock(dec_ch + skip_ch, dec_ch))
+            
+            in_ch = dec_ch # 다음 루프의 in_ch는 현재 루프의 out_ch
+
+        # 이미지 복원 헤드
         self.reconstruction_head = nn.Sequential(
-            nn.Conv2d(features[0], features[0] // 2, kernel_size=3, padding=1, bias=False),
-            nn.BatchNorm2d(features[0] // 2),
+            nn.Conv2d(self.decoder_channels[-1], 32, kernel_size=3, padding=1, bias=False),
+            nn.BatchNorm2d(32),
             nn.ReLU(inplace=True),
-            nn.Conv2d(features[0] // 2, 3, kernel_size=1),
-            nn.Sigmoid() # 출력을 [0, 1] 범위로 매핑 (원본 주간 이미지와 비교 위함)
+            nn.Conv2d(32, 3, kernel_size=1),
+            nn.Sigmoid()
         )
-        # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
-    def forward(self, x):
-        skip_connections = []
-        # 인코더 경로: 각 블록 통과 후 스킵 커넥션 저장
-        for block in self.encoder_blocks:
-            x = block(x)
-            skip_connections.append(x)
-            x = self.pool(x)
+    def forward(self, x_in):
+        # --- Encoder ---
+        x0 = self.init_conv(x_in) # 64 ch, 1/2
+        x0_relu = self.encoder0_0(x0) # 64 ch, 1/2 (Skip 3)
+        
+        e1_in = self.encoder0_1(x0_relu) # 1/4
+        e1 = self.encoder1(e1_in) # 64 ch, 1/4 (Skip 2)
+        
+        e2 = self.encoder2(e1) # 128 ch, 1/8 (Skip 1)
+        e3 = self.encoder3(e2) # 256 ch, 1/16 (Skip 0)
+        e4 = self.encoder4(e3) # 512 ch, 1/32
+        
+        # ▼▼▼ [버그 수정] 스킵 연결 리스트 ▼▼▼
+        # e4는 병목으로 가고, e3부터 스킵 연결 시작
+        skip_connections = [e3, e2, e1, x0_relu] 
+        # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+        
+        # --- Bottleneck ---
+        b = self.bottleneck(e4) # 1024 ch, 1/32
 
-        # 병목 구간 통과 (가장 깊은 문맥 정보 추출)
-        x_bottleneck = self.bottleneck(x)
+        multi_scale_features = []
+        x = b # 디코더 시작 (1024 ch, 1/32)
 
-        # 병목 특징으로 1채널 문맥 게이트 생성
-        context_gate = self.context_gate_generator(x_bottleneck) # Shape: [B*T, 1, H/32, W/32]
-
-        # 스킵 커넥션 순서 뒤집기 (디코더에서 사용하기 위함)
-        skip_connections = skip_connections[::-1]
-
-        multi_scale_features = [] # STD 모듈에 전달할 특징 맵 리스트
-
-        x = x_bottleneck # 디코더 시작점
-
-        # 디코더 경로
-        for i in range(len(self.upconvs)):
-            x = self.upconvs[i](x) # 업샘플링
-            skip_connection = skip_connections[i] # 해당 레벨의 스킵 커넥션 가져오기
-
-            # ▼▼▼ 게이트 적용 로직 (RuntimeError 해결) ▼▼▼
-
-            # (1) 1채널 문맥 게이트(context_gate)를 현재 스킵 커넥션의 크기로 리사이즈
-            current_gate = F.interpolate(context_gate, size=skip_connection.shape[2:], mode='bilinear', align_corners=False)
-            # current_gate Shape: [B*T, 1, H_skip, W_skip]
-
-            # (2) 게이트 적용: skip_connection(다중 채널) * current_gate(1 채널)
-            # PyTorch의 브로드캐스팅(broadcasting) 덕분에 채널 수가 달라도 곱셈 가능
-            gated_skip_connection = skip_connection * current_gate
-
-            # (3) 업샘플링된 특징(x)과 게이트 적용된 스킵 커넥션(gated_skip_connection)을 concat
-            if x.shape != gated_skip_connection.shape:
-                x = F.interpolate(x, size=gated_skip_connection.shape[2:], mode='bilinear', align_corners=False)
-
+        # --- Decoder ---
+        for i in range(len(self.decoder_channels)):
+            # 1. 업샘플링
+            x = self.upconvs[i](x) # i=0: (512 ch, 1/16)
+            
+            # 2. 스킵 연결 가져오기
+            skip_connection = skip_connections[i] # i=0: e3 (256 ch, 1/16). 크기 일치!
+            
+            # 3. 어텐션 게이트
+            gated_skip_connection = self.attention_gates[i](g=x, x=skip_connection)
+            
+            # 4. Concat
             concat_skip = torch.cat((gated_skip_connection, x), dim=1)
-            # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
-
-            # 디코더 블록 통과
-            x = self.decoder_blocks[i](concat_skip)
-
-            # STD 모듈에 전달할 특징 맵 저장 (고해상도 -> 저해상도 순서로 저장됨)
+            
+            # 5. 디코더 블록
+            x = self.decoder_blocks[i](concat_skip) # i=0: out (512 ch, 1/16)
+            
             multi_scale_features.append(x)
 
-        # ▼▼▼ 수정된 부분: 복원된 이미지 생성 및 반환 ▼▼▼
-        # x는 이제 가장 고해상도 디코더 특징 맵 (예: 64채널)
-        reconstructed_image = self.reconstruction_head(x)
+        # --- Reconstruction Head ---
+        # x는 이제 마지막 디코더 출력 (64 ch, 1/2)
+        reconstructed_image_half = self.reconstruction_head(x)
         
-        # multi_scale_features 리스트는 [Decoder_out_1(64ch), Decoder_out_2(128ch), ...] 순서
-        # 특징 맵 리스트와 복원된 이미지를 함께 반환
+        # 원본 크기로 업샘플링
+        reconstructed_image = F.interpolate(
+            reconstructed_image_half, 
+            size=x_in.shape[2:], 
+            mode='bilinear', 
+            align_corners=False
+        )
+        
+        # 특징 맵 리스트 (저해상도 -> 고해상도 순)와 복원 이미지 반환
         return multi_scale_features, reconstructed_image
-        # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲

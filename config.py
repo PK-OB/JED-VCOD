@@ -3,7 +3,7 @@
 class Config:
     # --- 공통 설정 ---
     common = {
-        'gpu_ids': '0,1,2,3',
+        'gpu_ids': '0,1',
         'clip_len': 8,
         'num_workers': 4,
     }
@@ -51,7 +51,7 @@ class Config:
         'patience': 100, # ReduceLROnPlateau: Early stopping patience
         'scheduler_patience': 5, # ReduceLROnPlateau: Scheduler patience
         'scheduler_factor': 0.5,
-        'checkpoint_name': '1026_2218.pth',
+        'checkpoint_name': '1027_1620.pth',
         'debug_image_interval': 5,
     }
     
